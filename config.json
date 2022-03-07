@@ -1,1 +1,1 @@
-{"ServerIp":"127.0.0.1","MailDetails":{"Mail":"jlnoreply@yandex.ru","Password":"fuckingslaves","Host":"smtp.yandex.ru:465"}}
+{"ServerIp":"127.0.0.1:8080","MailDetails":{"Mail":"jlnoreply@yandex.ru","Password":"fuckingslaves","Host":"smtp.yandex.ru:465"},"CryptSecret":"AmogusVeryVerySus"}

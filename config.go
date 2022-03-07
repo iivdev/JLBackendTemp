@@ -7,35 +7,37 @@ import (
 )
 
 type Config struct {
-	ServerIp string
+	ServerIp    string
 	MailDetails SmtpDetails
+	CryptSecret string
 }
 
-func ReadConfig() error{
+func ReadConfig() error {
 	data, err := ioutil.ReadFile("config.json")
-	if err!=nil{
+	if err != nil {
 		CreateBlankConfig()
 		return fmt.Errorf("no config found, blank created")
 	}
 	var config Config
 	err = json.Unmarshal(data, &config)
-	if err!=nil{
+	if err != nil {
 		CreateBlankConfig()
 		return fmt.Errorf("incorrect config")
 	}
 	details = config.MailDetails
 	serverIP = config.ServerIp
+	cryptSecret = config.CryptSecret
 	return nil
 }
 
-func CreateBlankConfig(){
+func CreateBlankConfig() {
 	var config Config
 	data, err := json.Marshal(config)
-	if err!=nil{
+	if err != nil {
 		return
 	}
 	err = ioutil.WriteFile("config.json", data, 0644)
-	if err!=nil{
+	if err != nil {
 		return
 	}
 }
