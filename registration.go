@@ -251,6 +251,9 @@ func tokenForUser(user *User, w http.ResponseWriter) error {
 
 func authenticate(r *http.Request) error {
 	authHeader := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
+	if authHeader == "" {
+		return fmt.Errorf("empty")
+	}
 	token, err := jwt.Parse(authHeader, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
