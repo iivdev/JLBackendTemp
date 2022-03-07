@@ -4,8 +4,11 @@
 
 Поставить Go
 
-Поставить кринжовую библиотеку, которую я временно юзаю
-
+Поставить библиотеки
+```
+go get github.com/golang-jwt/jwt
+go get github.com/syndtr/goleveldb/leveldb
+```
 Потом
 
 ```
