@@ -224,7 +224,7 @@ func tokenForUser(user *User, w http.ResponseWriter) error {
 	}
 
 	user.RefreshToken = randomString(32)
-	user.TokenExpires = time.Now().Add(tokenExpirationDuration).UnixMilli()
+	user.TokenExpires = time.Now().Add(tokenExpirationDuration).Unix()
 
 	err = putUser(*user)
 	if err != nil {
@@ -265,7 +265,7 @@ func authenticate(r *http.Request) error {
 	if err != nil {
 		return fmt.Errorf("bad data")
 	}
-	if user.TokenExpires < time.Now().UnixMilli() {
+	if user.TokenExpires < time.Now().Unix() {
 		return fmt.Errorf("expired")
 	}
 	return nil
