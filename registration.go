@@ -137,7 +137,11 @@ func pingHandler(w http.ResponseWriter, _ *http.Request) {
 func checkAuthHandler(w http.ResponseWriter, r *http.Request) {
 	err := authenticate(r)
 	if err != nil {
-		http.Error(w, "Invalid token", 400)
+		if err.Error() == "expired" {
+			http.Error(w, "Token expired", 401)
+		} else {
+			http.Error(w, "Invalid token", 400)
+		}
 		return
 	}
 	_, err = w.Write([]byte("ok"))
