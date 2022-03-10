@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang-jwt/jwt"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
@@ -27,6 +28,22 @@ type AuthResponse struct {
 
 type ErrorMessage struct {
 	Message string
+}
+
+type RegisterRequestData struct {
+	Username string
+	Password string
+	Email    string
+}
+
+type AuthRequestData struct {
+	Username string
+	Password string
+}
+
+type RefreshAuthRequestData struct {
+	Token   string
+	Refresh string
 }
 
 var currentlyAwaiting []UnregisteredUser
@@ -55,14 +72,20 @@ func randomString(length int) string {
 }
 
 func registerHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Internal server error", 500)
+		return
+	}
+	var bodyData RegisterRequestData
+	err = json.Unmarshal(body, &bodyData)
 	if err != nil {
 		http.Error(w, "Bad request", 400)
 		return
 	}
-	username := r.Form.Get("username")
-	password := r.Form.Get("password")
-	email := r.Form.Get("email")
+	username := bodyData.Username
+	password := bodyData.Password
+	email := bodyData.Email
 	if username == "" || password == "" || email == "" {
 		http.Error(w, "Bad request", 400)
 		return
@@ -151,14 +174,19 @@ func checkAuthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func authHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Internal server error", 500)
+		return
+	}
+	var bodyData AuthRequestData
+	err = json.Unmarshal(body, &bodyData)
 	if err != nil {
 		http.Error(w, "Bad request", 400)
 		return
 	}
-	u := r.Form.Get("username")
-	p := r.Form.Get("password")
-
+	u := bodyData.Username
+	p := bodyData.Password
 	if checkUser(u) {
 		user, err := getUser(u)
 		if err != nil {
@@ -179,14 +207,20 @@ func authHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func refreshAuthHandler(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		http.Error(w, "Internal server error", 500)
+		return
+	}
+	var bodyData RefreshAuthRequestData
+	err = json.Unmarshal(body, &bodyData)
 	if err != nil {
 		http.Error(w, "Bad request", 400)
 		return
 	}
 
-	tokenString := r.Form.Get("token")
-	refresh := r.Form.Get("refresh")
+	tokenString := bodyData.Token
+	refresh := bodyData.Refresh
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
@@ -264,6 +298,9 @@ func authenticate(r *http.Request) error {
 		}
 		return []byte(cryptSecret), nil
 	})
+	if err != nil {
+		return fmt.Errorf("bad data")
+	}
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok || !token.Valid {
 		return fmt.Errorf("bad data")
